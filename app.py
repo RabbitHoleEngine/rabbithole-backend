@@ -60,6 +60,10 @@ def get_results(request_id, timeout=10):
         time.sleep(1)
     return []
 
+@app.route("/")
+def home():
+	return "Hello, World!"
+
 @app.route("/scrape", methods=["GET"])
 def scrape():
     query = request.args.get("query")
