@@ -18,9 +18,9 @@ class RedditSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        post = Reddit()
         post_links = response.css("a[data-testid='post-title']::attr(href)").getall()[:5]
         for post_link in post_links:
+            post = Reddit()
             full_url = response.urljoin(post_link)
             yield scrapy.Request(url=full_url, callback=self.parse_post, meta={"post": post}) 
 
