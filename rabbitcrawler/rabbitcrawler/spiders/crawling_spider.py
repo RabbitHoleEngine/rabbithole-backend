@@ -1,19 +1,24 @@
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
+import scrapy
 
 
-class CrawlingSpider(CrawlSpider):
-    name = ""
-    allowed_domains = []
-    start_urls = [""] 
+class RedditCrawler(scrapy.Spider):
+    name = "redditcrawler"
 
+    def __init__(self, query="", *args, **kwargs):
+        super(RedditCrawler, self).__init__(*args, **kwargs)
+        self.start_urls = [f"https://www.reddit.com/search/?q={query}"]
 
-    rules = (
-        Rule(LinkExtractor(allow="")),
-        Rule(LinkExtractor(allow="", deny=""), callback="")
-    )
+    def parse(self, response):
+        post_links = response.css("a[data-testid='post-title']::attr(href)").getall()[
+            :5
+        ]
+        for post_link in post_links:
+            full_url = response.urljoin(post_link)
+            yield scrapy.Request(full_url, callback=self.parse_post)
 
-    def parse_item(self, response):
+    def parse_post(self, response):
         yield {
-            "": response.css("").get(),
+            "url": response.url,
+            "title": response.css("h1::text").get().strip(),
+            # "content": response.text,
         }
