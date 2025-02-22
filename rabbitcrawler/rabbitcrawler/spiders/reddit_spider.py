@@ -1,11 +1,11 @@
 import scrapy
 from ..items import Reddit
 
-class RedditCrawler(scrapy.Spider):
+class RedditSpider(scrapy.Spider):
     name = "reddit"
     
     def __init__(self, query, *args, **kwargs):
-        super(RedditCrawler, self).__init__(*args, **kwargs)
+        super(RedditSpider, self).__init__(*args, **kwargs)
         self.start_urls = [f"https://www.reddit.com/search/?q={query}"]
         
     def parse(self, response):
