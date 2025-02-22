@@ -35,6 +35,10 @@ def run_spider(query):
     else:
         reactor.callFromThread(crawl)
 
+@app.route("/")
+def home():
+    return "Hello, World!"
+
 
 @app.route("/scrape", methods=["GET"])
 def scrape():
