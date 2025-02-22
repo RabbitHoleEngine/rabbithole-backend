@@ -4,7 +4,7 @@ import scrapy
 class RedditCrawler(scrapy.Spider):
     name = "redditcrawler"
 
-    def __init__(self, query="", *args, **kwargs):
+    def __init__(self, query, *args, **kwargs):
         super(RedditCrawler, self).__init__(*args, **kwargs)
         self.start_urls = [f"https://www.reddit.com/search/?q={query}"]
 
