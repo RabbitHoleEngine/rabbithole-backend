@@ -14,10 +14,11 @@ def return_spider_output(output):
     _encoder = ScrapyJSONEncoder(ensure_ascii=False)
     return _encoder.encode(output)
 
-@app.route('/search')
+@app.route('/search', methods=["GET"])
 def get_quotes(request):
-    content = json.loads(request.content.read())
-    query = content.get("query")
+
+    query = request.args.get(b"q")
+    query = query[0].decode("utf-8")
 
     runner = SpiderRunner()
 
