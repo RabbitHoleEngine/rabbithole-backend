@@ -14,3 +14,4 @@ class RabbitcrawlerItem(scrapy.Item):
 class Reddit(scrapy.Item):
     url = scrapy.Field()
     title = scrapy.Field()
+    depth = scrapy.Field()
