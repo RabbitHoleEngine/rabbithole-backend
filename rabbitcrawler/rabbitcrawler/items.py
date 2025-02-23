@@ -15,3 +15,13 @@ class Reddit(scrapy.Item):
     url = scrapy.Field()
     title = scrapy.Field()
     depth = scrapy.Field()
+
+class Youtube(scrapy.Item):
+    url = scrapy.Field()
+    title = scrapy.Field()
+    depth = scrapy.Field()
+
+class Wiki(scrapy.Item):
+    url = scrapy.Field()
+    title = scrapy.Field()
+    depth = scrapy.Field()

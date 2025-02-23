@@ -1,16 +1,16 @@
 import scrapy
-from ..items import Reddit
+from ..items import Youtube
 from collections import defaultdict
 
 
 
-class RedditSpider(scrapy.Spider):
-    name = "reddit"
+class YoutubeSpider(scrapy.Spider):
+    name = "youtube"
     
 
     def __init__(self, query, max_depth=3, *args, **kwargs):
-        super(RedditSpider, self).__init__(*args, **kwargs)
-        self.start_urls = [f"https://www.reddit.com/search/?q={query}"]
+        super(YoutubeSpider, self).__init__(*args, **kwargs)
+        self.start_urls = [f"https://www.youtube.com/results?search_query={query}"]
         self.table = defaultdict(set)
         self.max_depth = int(max_depth)
     
@@ -18,27 +18,31 @@ class RedditSpider(scrapy.Spider):
     def parse(self, response, current_depth=1):
         if current_depth > self.max_depth:
             return
-            
-        post_links = response.css("a[data-testid='post-title']::attr(href)").getall()[:5]            
-        for post_link in post_links:
-            post = Reddit()
-            full_url = response.urljoin(post_link)
+
+
+        video_links = response.css("a[class='yt-simple-endpoint']::attr(href)").getall()[:5]
+        print("LINKSSSSSSSSSSS", video_links)         
+        for video_link in video_links:
+            post = Youtube()
+            full_url = response.urljoin(video_link)
             self.table[current_depth].add(full_url)
             yield scrapy.Request(
                 url=full_url, 
                 callback=self.parse_post, 
                 meta={"post": post, "depth": current_depth}
             )
-
+            
 
         if current_depth < self.max_depth:
-            all_links = response.css("a::attr(href)").getall()[:5]
-            for link in all_links:
-                full_url = response.urljoin(link)
+            description_links = response.css("a[class='yt-core-attributed-string--link']::attr(href)").getall()[:5]            
+            for description_link in description_links:
+                post = Youtube()
+                full_url = response.urljoin(description_link)
+                self.table[current_depth].add(full_url)
                 yield scrapy.Request(
-                    url=full_url,
-                    callback=self.parse,
-                    meta={"current_depth": current_depth + 1}
+                    url=full_url, 
+                    callback=self.parse_post, 
+                    meta={"post": post, "depth": current_depth}
                 )
 
     
@@ -53,6 +57,6 @@ class RedditSpider(scrapy.Spider):
     def closed(self, reason):
         print("\nCrawled URLs by depth:")
         for depth, urls in self.table.items():
-            print(f"\nDepth {sdepth}:")
+            print(f"\nDepth {depth}:")
             for url in urls:
                 print(f"  {url}")
