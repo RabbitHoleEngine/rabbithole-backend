@@ -20,8 +20,7 @@ class YoutubeSpider(scrapy.Spider):
             return
 
 
-        video_links = response.css("a[class='yt-simple-endpoint']::attr(href)").getall()[:5]
-        print("LINKSSSSSSSSSSS", video_links)         
+        video_links = response.css("a#video-title::attr(href)").getall()[:5]
         for video_link in video_links:
             post = Youtube()
             full_url = response.urljoin(video_link)
@@ -34,7 +33,7 @@ class YoutubeSpider(scrapy.Spider):
             
 
         if current_depth < self.max_depth:
-            description_links = response.css("a[class='yt-core-attributed-string--link']::attr(href)").getall()[:5]            
+            description_links = response.css("#description a::attr(href)").getall()[:5]
             for description_link in description_links:
                 post = Youtube()
                 full_url = response.urljoin(description_link)

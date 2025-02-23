@@ -1,16 +1,16 @@
 import scrapy
-from ..items import Reddit
+from ..items import Wiki
 from collections import defaultdict
 
 
 
 class RedditSpider(scrapy.Spider):
-    name = "reddit"
+    name = "wiki"
     
 
     def __init__(self, query, max_depth=3, *args, **kwargs):
         super(RedditSpider, self).__init__(*args, **kwargs)
-        self.start_urls = [f"https://www.reddit.com/search/?q={query}"]
+        self.start_urls = [f"https://en.wikipedia.org/w/index.php?fulltext=1&search={query}"]
         self.table = defaultdict(set)
         self.max_depth = int(max_depth)
     
@@ -19,21 +19,22 @@ class RedditSpider(scrapy.Spider):
         if current_depth > self.max_depth:
             return
             
-        post_links = response.css("a[data-testid='post-title']::attr(href)").getall()[:5]            
-        for post_link in post_links:
-            post = Reddit()
-            full_url = response.urljoin(post_link)
+        wiki_links = response.css(".mw-search-result-heading a::attr(href)").getall()[:5]
+        for wiki_link in wiki_links:
+            wiki = Wiki()
+            full_url = response.urljoin(wiki_link)
             self.table[current_depth].add(full_url)
             yield scrapy.Request(
                 url=full_url, 
-                callback=self.parse_post, 
-                meta={"post": post, "depth": current_depth}
+                callback=self.parse_wiki, 
+                meta={"wiki": wiki, "depth": current_depth}
             )
 
 
         if current_depth < self.max_depth:
-            all_links = response.css("a::attr(href)").getall()[:7]
-            for link in all_links:
+            all_links = response.css("a::attr(href)").getall()
+            non_wiki_links = [response.urljoin(link) for link in all_links if "wikipedia.org" not in link][:10]
+            for link in non_wiki_links:
                 full_url = response.urljoin(link)
                 yield scrapy.Request(
                     url=full_url,
@@ -42,12 +43,12 @@ class RedditSpider(scrapy.Spider):
                 )
 
     
-    def parse_post(self, response):
-        post = response.meta["post"]
-        post["url"] = response.url
-        post["title"] = response.css("h1::text").get().strip()
-        post["depth"] = response.meta["depth"]
-        yield post
+    def parse_wiki(self, response):
+        wiki = response.meta["wiki"]
+        wiki["url"] = response.url
+        wiki["title"] = response.css(".mw-page-title-main::text").get().strip()
+        wiki["depth"] = response.meta["depth"]
+        yield wiki
     
 
     def closed(self, reason):
